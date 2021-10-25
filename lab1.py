@@ -21,15 +21,33 @@ if __name__ == "__main__":
 
    ###########################
    # 3. Получить бинарное изображение краев (границ объектов).
-   # 4. Удалить мелкие границы у которых длина и ширина меньше 10.
    ###########################
    img_binary = cv2.Canny(crop_img,150,150)
+
+   ###########################
+   # 4. Удалить мелкие границы у которых длина и ширина меньше 10.
+   ###########################
+   cropped_img_grey = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+   nb_components, labels, stats, centroids = cv2.connectedComponentsWithStats(img_binary, 4)
+   mask = np.zeros(cropped_img_grey.shape, dtype="uint8")
+
+   for i in range(1, nb_components):
+      w = stats[i, cv2.CC_STAT_WIDTH]
+      h = stats[i, cv2.CC_STAT_HEIGHT]
+
+      if w < 10 and h < 10:
+         continue
+
+      componentMask = (labels == i).astype("uint8") * 255
+      mask = cv2.bitwise_or(mask, componentMask)
+
+   cv2.imshow("Edges", mask)
 
    ###########################
    # 5. Применить морфологическую операцию наращивания (размер структурирующего элемента 5 x 5).
    ###########################
    kernel = np.ones((5, 5), 'uint8')
-   img_dilated = cv2.dilate(img_binary, kernel, iterations=1)
+   img_dilated = cv2.dilate(mask, kernel, iterations=1)
 
    ###########################
    # 6. Сгладить полученное изображение краев гауссовским фильтром 5 на 5.
