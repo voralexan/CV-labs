@@ -69,7 +69,22 @@ if __name__ == "__main__":
    ###########################
    # 8. Получить изображение F2 лица с улучшенной четкостью/контрастностью.
    ###########################
-   img_F2=cv2.addWeighted(crop_img,1.2,np.zeros(crop_img.shape, crop_img.dtype),0,0)
+   img_F2=cv2.addWeighted(crop_img,1.2,img_F1,0,0)
+   max=[0,0,0]
+   min=[255,255,255]
+   for c in range(0,2):
+      for y in range(0,cropped_img_grey.shape[1]):
+         for x in range(0,cropped_img_grey.shape[0]):
+            if crop_img[x,y,c] > max[c]:
+               max[c]=crop_img[x,y,c]
+            if crop_img[x,y,c] < min[c]:
+               min[c]=crop_img[x,y,c]
+
+      k=255/(max[c]-min[c])
+      b=-(min[c]*255)/(max[c]-min[c])
+      for y in range(0,cropped_img_grey.shape[1]):
+         for x in range(0,cropped_img_grey.shape[0]):
+            img_F2[x,y,c] =  crop_img[x,y,c]*k+b
 
    ###########################
    # 9. Осуществить финальную фильтрацию по формуле
